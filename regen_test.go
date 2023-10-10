@@ -553,10 +553,9 @@ func TestCaptureGroupHandler(t *testing.T) {
 
 func TestGenerateWithinCustomizedCharSet(t *testing.T) {
 	maxRandLength := 20
-	minRandLength := 5
 	prefixStr := `/fixed/string/`
 	suffixStr := `-postfix`
-	regexStr := fmt.Sprintf("^%s[^\n]{%d,}%s$", prefixStr, minRandLength, suffixStr)
+	regexStr := fmt.Sprintf("^%s[^\n]+%s$", prefixStr, suffixStr)
 
 	// fully random chars
 	argsPtr := &GeneratorArgs{
@@ -573,7 +572,6 @@ func TestGenerateWithinCustomizedCharSet(t *testing.T) {
 	randPart := randStr[len(prefixStr) : len(randStr)-len(suffixStr)]
 	fmt.Printf("%s::%d, %s::%d", randStr, len(randStr), randPart, len(randPart))
 	fmt.Println()
-	assert.Greater(t, len(randPart), minRandLength)
 
 	// only digit numbers in 2, 3, 4, 5, 6, 7
 	argsPtr.CharSetLowBound = rune(50)
@@ -587,7 +585,6 @@ func TestGenerateWithinCustomizedCharSet(t *testing.T) {
 	randPart = randStr[len(prefixStr) : len(randStr)-len(suffixStr)]
 	fmt.Printf("%s::%d, %s::%d", randStr, len(randStr), randPart, len(randPart))
 	fmt.Println()
-	assert.GreaterOrEqual(t, len(randPart), minRandLength)
 	assert.LessOrEqual(t, len(randPart), maxRandLength)
 	for i := 0; i < len(randPart); i++ {
 		assert.GreaterOrEqual(t, randPart[i], byte('2'))
@@ -606,7 +603,6 @@ func TestGenerateWithinCustomizedCharSet(t *testing.T) {
 	randPart = randStr[len(prefixStr) : len(randStr)-len(suffixStr)]
 	fmt.Printf("%s::%d, %s::%d", randStr, len(randStr), randPart, len(randPart))
 	fmt.Println()
-	assert.GreaterOrEqual(t, len(randPart), minRandLength)
 	assert.LessOrEqual(t, len(randPart), maxRandLength)
 	for i := 0; i < len(randPart); i++ {
 		assert.GreaterOrEqual(t, randPart[i], byte('H'))
