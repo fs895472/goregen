@@ -22,7 +22,9 @@ import (
 	"os"
 	"regexp"
 	"regexp/syntax"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/gxui/math"
 	. "github.com/smartystreets/goconvey/convey"
@@ -547,6 +549,65 @@ func TestCaptureGroupHandler(t *testing.T) {
 		So(gen.Generate(), ShouldEqual, "foo one two")
 		So(callCount, ShouldEqual, 2)
 	})
+}
+
+func TestGenerateWithinCustomizedCharSet(t *testing.T) {
+	maxRandLength := 20
+	prefixStr := `/fixed/string/`
+	suffixStr := `-postfix`
+	regexStr := fmt.Sprintf("^%s[^\n]+%s$", prefixStr, suffixStr)
+
+	// fully random chars
+	argsPtr := &GeneratorArgs{
+		RngSource:               rand.NewSource(time.Now().UnixNano()),
+		MaxUnboundedRepeatCount: uint(maxRandLength), // For this example, limit the max count for unbounded repeats.
+	}
+
+	randomStrGenerator, e := NewGenerator(regexStr, argsPtr)
+	assert.Nil(t, e)
+	randStr := randomStrGenerator.Generate()
+	assert.True(t, strings.HasPrefix(randStr, prefixStr))
+	assert.True(t, strings.HasSuffix(randStr, suffixStr))
+
+	randPart := randStr[len(prefixStr) : len(randStr)-len(suffixStr)]
+	fmt.Printf("%s::%d, %s::%d", randStr, len(randStr), randPart, len(randPart))
+	fmt.Println()
+
+	// only digit numbers in 2, 3, 4, 5, 6, 7
+	argsPtr.CharSetLowBound = rune(50)
+	argsPtr.CharSetHighBound = rune(55)
+	randomStrGenerator, e = NewGenerator(regexStr, argsPtr)
+	assert.Nil(t, e)
+	randStr = randomStrGenerator.Generate()
+	assert.True(t, strings.HasPrefix(randStr, prefixStr))
+	assert.True(t, strings.HasSuffix(randStr, suffixStr))
+
+	randPart = randStr[len(prefixStr) : len(randStr)-len(suffixStr)]
+	fmt.Printf("%s::%d, %s::%d", randStr, len(randStr), randPart, len(randPart))
+	fmt.Println()
+	assert.LessOrEqual(t, len(randPart), maxRandLength)
+	for i := 0; i < len(randPart); i++ {
+		assert.GreaterOrEqual(t, randPart[i], byte('2'))
+		assert.LessOrEqual(t, randPart[i], byte('7'))
+	}
+
+	// only capital chars from H to S
+	argsPtr.CharSetLowBound = rune(72)
+	argsPtr.CharSetHighBound = rune(83)
+	randomStrGenerator, e = NewGenerator(regexStr, argsPtr)
+	assert.Nil(t, e)
+	randStr = randomStrGenerator.Generate()
+	assert.True(t, strings.HasPrefix(randStr, prefixStr))
+	assert.True(t, strings.HasSuffix(randStr, suffixStr))
+
+	randPart = randStr[len(prefixStr) : len(randStr)-len(suffixStr)]
+	fmt.Printf("%s::%d, %s::%d", randStr, len(randStr), randPart, len(randPart))
+	fmt.Println()
+	assert.LessOrEqual(t, len(randPart), maxRandLength)
+	for i := 0; i < len(randPart); i++ {
+		assert.GreaterOrEqual(t, randPart[i], byte('H'))
+		assert.LessOrEqual(t, randPart[i], byte('S'))
+	}
 }
 
 func ConveyGeneratesStringMatchingItself(args *GeneratorArgs, patterns ...string) {

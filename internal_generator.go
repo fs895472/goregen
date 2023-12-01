@@ -154,7 +154,7 @@ func opRepeat(regexp *syntax.Regexp, args *GeneratorArgs) (*internalGenerator, e
 // classes that respect it.
 func opCharClass(regexp *syntax.Regexp, args *GeneratorArgs) (*internalGenerator, error) {
 	enforceOp(regexp, syntax.OpCharClass)
-	charClass := parseCharClass(regexp.Rune)
+	charClass := parseCharClass(regexp.Rune, args)
 	return createCharClassGenerator(regexp.String(), charClass, args)
 }
 

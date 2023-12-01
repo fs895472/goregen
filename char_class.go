@@ -54,7 +54,7 @@ e.g.
 
 "[^a-z]" -> "…" -> 0-(a-1), (z+1)-(max rune)
 */
-func parseCharClass(runes []rune) *tCharClass {
+func parseCharClass(runes []rune, args *GeneratorArgs) *tCharClass {
 	var totalSize int32
 	numRanges := len(runes) / 2
 	ranges := make([]tCharClassRange, numRanges, numRanges)
@@ -68,6 +68,21 @@ func parseCharClass(runes []rune) *tCharClass {
 			// doesn't make sense to generate null bytes, so all ranges must start at
 			// no less than 1.
 			start = 1
+		}
+
+		// force reset to honor the selected char range if specified
+		if args != nil {
+			if args.CharSetLowBound > 0 && end < args.CharSetLowBound {
+				continue
+			}
+
+			if args.CharSetLowBound > 0 && start < args.CharSetLowBound {
+				start = args.CharSetLowBound
+			}
+
+			if args.CharSetHighBound > 0 && end > args.CharSetHighBound {
+				end = args.CharSetHighBound
+			}
 		}
 
 		r := newCharClassRange(start, end)
